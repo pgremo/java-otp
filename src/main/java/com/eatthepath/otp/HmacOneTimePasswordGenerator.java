@@ -85,14 +85,14 @@ public class HmacOneTimePasswordGenerator {
       throw new RuntimeException(e);
     }
 
-    final ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+    final var buffer = ByteBuffer.allocate(Long.BYTES);
     buffer.putLong(0, counter);
-    final byte[] hmac = mac.doFinal(buffer.array());
-    final int offset = hmac[hmac.length - 1] & 0x0f;
+    final var hmac = mac.doFinal(buffer.array());
+    final var offset = hmac[hmac.length - 1] & 0x0f;
 
     buffer.put(hmac, offset, Integer.BYTES);
 
-    final int hotp = buffer.getInt(0) & Integer.MAX_VALUE;
+    final var hotp = buffer.getInt(0) & Integer.MAX_VALUE;
 
     return hotp % this.modDivisor;
   }

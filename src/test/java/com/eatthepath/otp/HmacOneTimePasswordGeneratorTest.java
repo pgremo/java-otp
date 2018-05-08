@@ -30,6 +30,7 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 
 import static com.eatthepath.otp.Algorithm.HmacSHA256;
+import static java.nio.charset.StandardCharsets.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -55,7 +56,7 @@ class HmacOneTimePasswordGeneratorTest {
     assertEquals(HmacSHA256, new HmacOneTimePasswordGenerator(6, HmacSHA256).getAlgorithm());
   }
 
-  private final Key key = new SecretKeySpec("12345678901234567890".getBytes(StandardCharsets.US_ASCII), "RAW");
+  private final Key key = new SecretKeySpec("12345678901234567890".getBytes(US_ASCII), "RAW");
   /**
    * Tests generation of one-time passwords using the test vectors from
    * <a href="https://tools.ietf.org/html/rfc4226#appendix-D">RFC&nbsp;4226, Appendix D</a>.
