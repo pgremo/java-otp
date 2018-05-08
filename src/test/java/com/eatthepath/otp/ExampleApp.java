@@ -33,7 +33,7 @@ public class ExampleApp {
 
         final Key secretKey;
         {
-            final KeyGenerator keyGenerator = KeyGenerator.getInstance(totp.getAlgorithm());
+            final KeyGenerator keyGenerator = KeyGenerator.getInstance(totp.getAlgorithm().toString());
 
             // SHA-1 and SHA-256 prefer 64-byte (512-bit) keys; SHA512 prefers 128-byte (1024-bit) keys
             keyGenerator.init(512);

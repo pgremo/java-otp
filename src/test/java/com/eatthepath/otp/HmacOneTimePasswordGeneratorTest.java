@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 
+import static com.eatthepath.otp.Algorithm.HmacSHA256;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -45,18 +46,13 @@ class HmacOneTimePasswordGeneratorTest {
   }
 
   @Test
-  void testHmacOneTimePasswordGeneratorWithBogusAlgorithm() {
-    assertThrows(NoSuchAlgorithmException.class, () -> new HmacOneTimePasswordGenerator(6, "Definitely not a real algorithm"));
-  }
-
-  @Test
   void testGetPasswordLength() throws NoSuchAlgorithmException {
     assertEquals(7, new HmacOneTimePasswordGenerator(7).getPasswordLength());
   }
 
   @Test
   void testGetAlgorithm() throws NoSuchAlgorithmException {
-    assertEquals("HmacSHA256", new HmacOneTimePasswordGenerator(6, "HmacSHA256").getAlgorithm());
+    assertEquals(HmacSHA256, new HmacOneTimePasswordGenerator(6, HmacSHA256).getAlgorithm());
   }
 
   private final Key key = new SecretKeySpec("12345678901234567890".getBytes(StandardCharsets.US_ASCII), "RAW");
