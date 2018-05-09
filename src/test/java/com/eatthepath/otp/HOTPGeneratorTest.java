@@ -23,40 +23,37 @@ package com.eatthepath.otp;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 
 import static com.eatthepath.otp.Algorithm.HmacSHA256;
-import static java.nio.charset.StandardCharsets.*;
+import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class HmacOneTimePasswordGeneratorTest {
+class HOTPGeneratorTest {
 
-  @Test
-  void testHmacOneTimePasswordGeneratorWithShortPasswordLength() {
-    assertThrows(IllegalArgumentException.class, () -> new HmacOneTimePasswordGenerator(5));
-  }
-
-  @Test
-  void testHmacOneTimePasswordGeneratorWithLongPasswordLength() {
-    assertThrows(IllegalArgumentException.class, () -> new HmacOneTimePasswordGenerator(9));
+  @ParameterizedTest
+  @ValueSource(ints = {5, 9})
+  void testHmacOneTimePasswordGeneratorWithShortPasswordLength(final int length) {
+    assertThrows(IllegalArgumentException.class, () -> new HOTPGenerator(length));
   }
 
   @Test
   void testGetPasswordLength() throws NoSuchAlgorithmException {
-    assertEquals(7, new HmacOneTimePasswordGenerator(7).getPasswordLength());
+    assertEquals(7, new HOTPGenerator(7).getPasswordLength());
   }
 
   @Test
   void testGetAlgorithm() throws NoSuchAlgorithmException {
-    assertEquals(HmacSHA256, new HmacOneTimePasswordGenerator(6, HmacSHA256).getAlgorithm());
+    assertEquals(HmacSHA256, new HOTPGenerator(6, HmacSHA256).getAlgorithm());
   }
 
   private final Key key = new SecretKeySpec("12345678901234567890".getBytes(US_ASCII), "RAW");
+
   /**
    * Tests generation of one-time passwords using the test vectors from
    * <a href="https://tools.ietf.org/html/rfc4226#appendix-D">RFC&nbsp;4226, Appendix D</a>.
@@ -74,7 +71,6 @@ class HmacOneTimePasswordGeneratorTest {
     "8, 399871",
     "9, 520489"})
   void testGenerateOneTimePassword(final int counter, final int expectedOneTimePassword) throws Exception {
-    assertEquals(expectedOneTimePassword, new HmacOneTimePasswordGenerator().generateOneTimePassword(key, counter));
+    assertEquals(expectedOneTimePassword, new HOTPGenerator().generateOneTimePassword(key, counter));
   }
-
 }

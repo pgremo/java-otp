@@ -32,12 +32,12 @@ import static com.eatthepath.otp.Algorithm.HmacSHA1;
  * <p>Generates HMAC-based one-time passwords (HOTP) as specified in
  * <a href="https://tools.ietf.org/html/rfc4226">RFC&nbsp;4226</a>.</p>
  *
- * <p>{@code HmacOneTimePasswordGenerator} instances are thread-safe and may be shared and re-used across multiple
+ * <p>{@code HOTPGenerator} instances are thread-safe and may be shared and re-used across multiple
  * threads.</p>
  *
  * @author <a href="https://github.com/jchambers">Jon Chambers</a>
  */
-public class HmacOneTimePasswordGenerator {
+public class HOTPGenerator {
   private final Algorithm algorithm;
   private final int passwordLength;
   private final int modDivisor;
@@ -45,17 +45,17 @@ public class HmacOneTimePasswordGenerator {
   /**
    * The default length, in decimal digits, for one-time passwords.
    */
-  public static final int DEFAULT_PASSWORD_LENGTH = 6;
+  static final int DEFAULT_PASSWORD_LENGTH = 6;
 
-  public HmacOneTimePasswordGenerator() throws NoSuchAlgorithmException {
+  public HOTPGenerator() throws NoSuchAlgorithmException {
     this(DEFAULT_PASSWORD_LENGTH);
   }
 
-  public HmacOneTimePasswordGenerator(final int passwordLength) throws NoSuchAlgorithmException {
+  public HOTPGenerator(final int passwordLength) throws NoSuchAlgorithmException {
     this(passwordLength, HmacSHA1);
   }
 
-  protected HmacOneTimePasswordGenerator(final int passwordLength, final Algorithm algorithm) throws NoSuchAlgorithmException {
+  protected HOTPGenerator(final int passwordLength, final Algorithm algorithm) throws NoSuchAlgorithmException {
     if (passwordLength < 6 || passwordLength > 8)
       throw new IllegalArgumentException("Password length must be between 6 and 8 digits.");
     this.modDivisor = (int) Math.pow(10, passwordLength);
@@ -85,16 +85,18 @@ public class HmacOneTimePasswordGenerator {
       throw new RuntimeException(e);
     }
 
-    final var buffer = ByteBuffer.allocate(Long.BYTES);
-    buffer.putLong(0, counter);
+    final var buffer = ByteBuffer
+      .allocate(Long.BYTES)
+      .putLong(0, counter);
     final var hmac = mac.doFinal(buffer.array());
     final var offset = hmac[hmac.length - 1] & 0x0f;
 
     buffer.put(hmac, offset, Integer.BYTES);
 
-    final var hotp = buffer.getInt(0) & Integer.MAX_VALUE;
-
-    return hotp % this.modDivisor;
+    int hotp = buffer
+      .put(hmac, offset, Integer.BYTES)
+      .getInt(0) & Integer.MAX_VALUE;
+    return hotp % modDivisor;
   }
 
   /**
@@ -103,7 +105,7 @@ public class HmacOneTimePasswordGenerator {
    * @return the length, in decimal digits, of passwords produced by this generator
    */
   public int getPasswordLength() {
-    return this.passwordLength;
+    return passwordLength;
   }
 
   /**
@@ -112,6 +114,6 @@ public class HmacOneTimePasswordGenerator {
    * @return the name of the HMAC algorithm used by this generator
    */
   public Algorithm getAlgorithm() {
-    return this.algorithm;
+    return algorithm;
   }
 }
