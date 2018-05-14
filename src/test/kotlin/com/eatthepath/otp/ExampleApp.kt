@@ -1,50 +1,25 @@
-/* Copyright (c) 2016 Jon Chambers
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE. */
+package com.eatthepath.otp
 
-package com.eatthepath.otp;
+import com.eatthepath.otp.Algorithm.HmacSHA1
+import java.net.URI
+import java.time.Instant.now
+import java.time.temporal.ChronoUnit
+import java.util.concurrent.TimeUnit
+import javax.crypto.KeyGenerator
 
-import javax.crypto.KeyGenerator;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+fun main(args: Array<String>) {
+    val totp = TOTPGenerator(30, TimeUnit.SECONDS, 6, HmacSHA1)
 
-public class ExampleApp {
-    public static void main(final String[] args) throws NoSuchAlgorithmException, InvalidKeyException {
-        final TimeBasedOneTimePasswordGenerator totp = new TimeBasedOneTimePasswordGenerator();
+    val keyGenerator = KeyGenerator.getInstance(totp.algorithm.toString())
+    // SHA-1 and SHA-256 prefer 64-byte (512-bit) keys; SHA512 prefers 128-byte keys
+    keyGenerator.init(512)
 
-        final Key secretKey;
-        {
-            final KeyGenerator keyGenerator = KeyGenerator.getInstance(totp.getAlgorithm().toString());
+    val secretKey = keyGenerator.generateKey()
+    val now = now()
+    val later = now.plus(30, ChronoUnit.SECONDS)
 
-            // SHA-1 and SHA-256 prefer 64-byte (512-bit) keys; SHA512 prefers 128-byte (1024-bit) keys
-            keyGenerator.init(512);
+    System.out.format("Current password: %06d\n", totp.generateOneTimePassword(secretKey, now))
+    System.out.format("Future password:  %06d\n", totp.generateOneTimePassword(secretKey, later))
 
-            secretKey = keyGenerator.generateKey();
-        }
-
-        final Date now = new Date();
-        final Date later = new Date(now.getTime() + totp.getTimeStep(TimeUnit.MILLISECONDS));
-
-        System.out.format("Current password: %06d\n", totp.generateOneTimePassword(secretKey, now));
-        System.out.format("Future password:  %06d\n", totp.generateOneTimePassword(secretKey, later));
-    }
+    println(Parameters(URI("otpauth://totp/ACME%20Co:john.doe@email.com?secret=HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ&issuer=ACME%20Co&algorithm=SHA1&digits=6&period=30")))
 }

@@ -1,10 +1,8 @@
 package com.eatthepath.otp
 
-import com.eatthepath.otp.Algorithm.HmacSHA1
+import com.eatthepath.otp.Type.hotp
 import org.apache.commons.codec.binary.Base32
 import java.net.URI
-import java.util.*
-import java.util.regex.Pattern
 import javax.crypto.spec.SecretKeySpec
 
 val base32 = Base32()
@@ -16,53 +14,43 @@ internal class Parameters(uri: URI) {
     private val issuer: String
     private val algorithm: Algorithm
     private val digits: Int
-    private val counter: Int
+    private val counter: Int?
     private val period: Int
 
     init {
-        val query = Pattern.compile("&").split(uri.query)
-                .map { it.split("=") }
-                .associateBy({ it[0].toLowerCase() }, { it[1] })
+        val query = uri.parameters()
 
         type = Type.valueOf(uri.authority.toLowerCase())
         label = uri.path.substring(1)
-        secret = Optional.ofNullable(query["secret"])
-                .map<ByteArray> { base32.decode(it) }
-                .map { x -> SecretKeySpec(x, "RAW") }
-                .orElseThrow { IllegalArgumentException("secret is required") }
-        issuer = Optional.ofNullable(query["issuer"])
-                .or {
-                    Optional.of(label)
-                            .map { l -> l.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray() }
-                            .filter { l -> l.size > 1 }
-                            .map { l -> l[1] }
-                }
-                .orElseThrow { IllegalArgumentException("issuer is required") }
-        algorithm = Optional.ofNullable(query["algorithm"])
-                .map { x -> "Hmac$x" }
-                .map<Algorithm> { Algorithm.valueOf(it) }
-                .orElse(HmacSHA1)
-        digits = Optional.ofNullable(query["digits"])
-                .map<Int> { Integer.valueOf(it) }
-                .orElse(6)
-        counter = Optional.ofNullable(query["counter"])
-                .map<Int> { Integer.valueOf(it) }
-                .orElse(0)
-        period = Optional.ofNullable(query["period"])
-                .map<Int> { Integer.valueOf(it) }
-                .orElse(30)
+        issuer = query["issuer"] ?: label.let {
+            val l = label.split(":")
+            if (l.size > 1) l[0] else throw IllegalArgumentException("issuer is required")
+        }
+        secret = query["secret"]?.let { SecretKeySpec(base32.decode(it), "RAW") } ?: throw IllegalArgumentException("secret is required")
+        algorithm = Algorithm.valueOf("Hmac" + (query["algorithm"] ?: "SHA1"))
+        digits = query["digits"]?.toInt() ?: 6
+
+        // hotp
+        counter = query["counter"]?.toInt() ?: if (type == hotp) throw IllegalArgumentException("counter is required") else null
+
+        // totp
+        period = query["period"]?.toInt() ?: 30
     }
 
     override fun toString(): String {
         return "Parameters{" +
                 "type=" + type +
-                ", label='" + label + '\''.toString() +
+                ", label='" + label + '\'' +
                 ", secret=" + secret +
-                ", issuer='" + issuer + '\''.toString() +
+                ", issuer='" + issuer + '\'' +
                 ", algorithm=" + algorithm +
                 ", digits=" + digits +
                 ", counter=" + counter +
                 ", period=" + period +
-                '}'.toString()
+                '}'
     }
 }
+
+fun URI.parameters(): Map<String, String> = query.split("?")
+        .map { it.split("=") }
+        .associateBy({ it[0].toLowerCase() }, { it[1] })
