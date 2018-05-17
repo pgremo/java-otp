@@ -1,0 +1,30 @@
+plugins {
+  id "org.jetbrains.kotlin.jvm" version "1.2.41"
+  id "java"
+}
+
+group = 'com.eatthepath'
+version = '0.0.1-SNAPSHOT'
+
+description = "java-otp"
+
+sourceCompatibility = 10
+targetCompatibility = 10
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+dependencies {
+  compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: '1.2.41'
+  compile group: 'commons-codec', name: 'commons-codec', version: '1.11'
+  testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.2.0'
+  testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.2.0'
+}
+
+test {
+  useJUnitPlatform {
+    includeEngines 'junit-jupiter'
+  }
+}
