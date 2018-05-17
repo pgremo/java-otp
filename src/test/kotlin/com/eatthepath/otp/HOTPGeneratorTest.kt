@@ -1,6 +1,6 @@
 package com.eatthepath.otp
 
-import com.eatthepath.otp.Algorithm.HmacSHA256
+import com.eatthepath.otp.Algorithm.SHA256
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -17,17 +17,17 @@ internal open class HOTPGeneratorTest {
     @ParameterizedTest
     @ValueSource(ints = [5, 9])
     fun testHmacOneTimePasswordGeneratorWithShortPasswordLength(length: Int) {
-        assertThrows(IllegalArgumentException::class.java) { HOTPGenerator(length) }
+        assertThrows(IllegalArgumentException::class.java) { HOTPGenerator(key, length) }
     }
 
     @Test
     fun testGetPasswordLength() {
-        assertEquals(7, HOTPGenerator(7).digits)
+        assertEquals(7, HOTPGenerator(key, 7).digits)
     }
 
     @Test
     fun testGetAlgorithm() {
-        assertEquals(HmacSHA256, HOTPGenerator(6, HmacSHA256).algorithm)
+        assertEquals(SHA256, HOTPGenerator(key, 6, SHA256).algorithm)
     }
 
     @ParameterizedTest
@@ -43,7 +43,7 @@ internal open class HOTPGeneratorTest {
             "8, 399871",
             "9, 520489"
     )
-    fun testGenerateOneTimePassword(counter: Int, expectedOneTimePassword: Int) {
-        assertEquals(expectedOneTimePassword, HOTPGenerator().generateOneTimePassword(key, counter.toLong()))
+    fun testGenerateOneTimePassword(counter: Long, expectedOneTimePassword: Int) {
+        assertEquals(expectedOneTimePassword, HOTPGenerator(key).generateOneTimePassword { counter })
     }
 }
