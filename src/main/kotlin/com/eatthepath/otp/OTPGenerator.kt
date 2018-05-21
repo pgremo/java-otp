@@ -15,7 +15,7 @@ open class OTPGenerator(
 
     private val modDivisor: Int = 10.0.pow(digits).toInt()
 
-    fun generateOneTimePassword(counter: () -> Long): Int {
+    fun generate(counter: () -> Long): Int {
         val mac: Mac = Mac.getInstance("Hmac$algorithm")
         mac.init(key)
 

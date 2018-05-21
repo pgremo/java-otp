@@ -17,8 +17,8 @@ fun main(args: Array<String>) {
 
     val totp = OTPGenerator(secretKey, 6, "SHA1")
     val step = TimeUnit.SECONDS.toMillis(30)
-    System.out.format("Current password: %06d\n", totp.generateOneTimePassword { now.toEpochMilli() / step })
-    System.out.format("Future password:  %06d\n", totp.generateOneTimePassword { later.toEpochMilli() / step })
+    System.out.format("Current password: %06d\n", totp.generate { now.toEpochMilli() / step })
+    System.out.format("Future password:  %06d\n", totp.generate { later.toEpochMilli() / step })
 
     println(parse(URI("otpauth://totp/ACME%20Co:john.doe@email.com?secret=HXDMVJECJJWSRB3HWIZR4IFUGFTMXBOZ&issuer=ACME%20Co&algorithm=SHA1&digits=6&period=30")))
 }
