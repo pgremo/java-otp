@@ -1,6 +1,5 @@
 package com.eatthepath.otp
 
-import com.eatthepath.otp.Algorithm.SHA1
 import java.net.URI
 import java.time.Instant.now
 import java.time.temporal.ChronoUnit
@@ -16,7 +15,7 @@ fun main(args: Array<String>) {
     val now = now()
     val later = now.plus(30, ChronoUnit.SECONDS)
 
-    val totp = HOTPGenerator(secretKey, 6, SHA1)
+    val totp = OTPGenerator(secretKey, 6, "SHA1")
     val step = TimeUnit.SECONDS.toMillis(30)
     System.out.format("Current password: %06d\n", totp.generateOneTimePassword { now.toEpochMilli() / step })
     System.out.format("Future password:  %06d\n", totp.generateOneTimePassword { later.toEpochMilli() / step })

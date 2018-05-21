@@ -1,19 +1,19 @@
 package com.eatthepath.otp
 
-import com.eatthepath.otp.Algorithm.SHA1
 import java.nio.ByteBuffer
 import java.security.Key
+import java.time.Clock
+import java.util.concurrent.atomic.AtomicLong
 import javax.crypto.Mac
 import kotlin.experimental.and
 import kotlin.math.pow
 
-open class HOTPGenerator(private val key: Key, val digits: Int = 6, val algorithm: Algorithm = SHA1) {
-    private val modDivisor: Int
+open class OTPGenerator(
+        private val key: Key,
+        digits: Int = 6,
+        private val algorithm: String = "SHA1") {
 
-    init {
-        require(digits in 6..8) { "$digits must be 6,7 or 8 digits." }
-        modDivisor = 10.0.pow(digits).toInt()
-    }
+    private val modDivisor: Int = 10.0.pow(digits).toInt()
 
     fun generateOneTimePassword(counter: () -> Long): Int {
         val mac: Mac = Mac.getInstance("Hmac$algorithm")
@@ -33,3 +33,11 @@ open class HOTPGenerator(private val key: Key, val digits: Int = 6, val algorith
         return otp % modDivisor
     }
 }
+
+fun hotp(counter: Long): () -> Long{
+    val atomic = AtomicLong(counter)
+    return atomic::getAndIncrement
+}
+
+fun totp(step: Long): () -> Long = { Clock.systemUTC().millis() / step }
+fun totp(clock: Clock, step: Long): () -> Long = { clock.millis() / step }
