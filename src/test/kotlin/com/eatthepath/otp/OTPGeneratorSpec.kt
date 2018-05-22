@@ -70,7 +70,7 @@ object OTPGeneratorSpec : Spek({
 })
 
 fun clock(instant: Long): Clock {
-    return Clock.fixed(Instant.ofEpochSecond(instant), ZoneId.of("UTC"));
+    return Clock.fixed(Instant.ofEpochSecond(instant), ZoneId.of("UTC"))
 }
 
 val keys = mapOf(

@@ -39,5 +39,4 @@ fun hotp(counter: Long): () -> Long{
     return atomic::getAndIncrement
 }
 
-fun totp(step: Long): () -> Long = { Clock.systemUTC().millis() / step }
 fun totp(clock: Clock, step: Long): () -> Long = { clock.millis() / step }
