@@ -8,3 +8,6 @@ _site
 #ignore intellij files
 *.iml
 .idea/
+out
+build
+.gradle
