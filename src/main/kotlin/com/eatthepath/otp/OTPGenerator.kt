@@ -34,7 +34,7 @@ open class OTPGenerator(
     }
 }
 
-fun hotp(counter: Long): () -> Long{
+fun hotp(counter: Long): () -> Long {
     val atomic = AtomicLong(counter)
     return atomic::getAndIncrement
 }
