@@ -1,25 +1,27 @@
 package com.eatthepath.otp
 
 import com.eatthepath.otp.Type.hotp
-import org.apache.commons.codec.binary.Base32
 import java.net.URI
 import java.security.Security
-import javax.crypto.spec.SecretKeySpec
 
-val base32 = Base32()
+val validAlgorithms = Security.getProviders().flatMap { it.services }.map { it.algorithm }
 
 fun parse(uri: URI): Parameters {
-    val query = uri.parameters()
 
     val type = Type.valueOf(uri.authority.toLowerCase())
     val label = uri.path.substring(1)
+
+    val query = uri.parameters()
+
     val issuer = query["issuer"] ?: label.split(":").let {
         if (it.size > 1) it[0] else throw IllegalArgumentException("issuer is required")
     }
-    val secret = requireNotNull(query["secret"]) { "secret is required" }
-            .let { SecretKeySpec(base32.decode(it), "RAW") }
+
+    val secret = query["secret"]
+    requireNotNull(secret) { "secret is required" }
+
     val algorithm = query["algorithm"] ?: "SHA1"
-    require(Security.getProviders().flatMap { it.services }.map { it.algorithm }.contains("Hmac$algorithm")) { "$algorithm is not supported" }
+    require("Hmac$algorithm" in validAlgorithms) { "$algorithm is not supported" }
 
     val digits = query["digits"]?.toInt() ?: 6
     require(digits in 6..8) { "$digits must be 6,7 or 8 digits." }
@@ -34,7 +36,7 @@ fun parse(uri: URI): Parameters {
     return Parameters(
             type,
             label,
-            secret,
+            secret!!,
             issuer,
             algorithm,
             digits,
@@ -46,7 +48,7 @@ fun parse(uri: URI): Parameters {
 data class Parameters(
         val type: Type,
         val label: String,
-        val secret: SecretKeySpec,
+        val secret: String,
         val issuer: String,
         val algorithm: String,
         val digits: Int,
@@ -58,6 +60,6 @@ enum class Type {
     totp, hotp
 }
 
-fun URI.parameters(): Map<String, String> = query.split("?")
+fun URI.parameters(): Map<String, String> = query.split("&")
         .map { it.split("=") }
-        .associateBy({ it[0].toLowerCase() }, { it[1] })
+        .associateBy({ it[0].toLowerCase() }) { it[1] }
