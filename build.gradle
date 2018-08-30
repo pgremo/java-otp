@@ -1,5 +1,5 @@
 plugins {
-  id 'org.jetbrains.kotlin.jvm' version '1.2.41'
+    id 'org.jetbrains.kotlin.jvm' version '1.2.61'
 }
 
 group = 'com.eatthepath'
@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-  compile 'org.jetbrains.kotlin:kotlin-stdlib:1.2.41',
+  compile 'org.jetbrains.kotlin:kotlin-stdlib:1.2.61',
     'commons-codec:commons-codec:1.11'
   testCompile 'org.junit.jupiter:junit-jupiter-engine:5.2.0',
     'org.junit.jupiter:junit-jupiter-params:5.2.0'
